@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SeeSound Project</title>
+  <style>
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 20px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #4CAF50;
+      color: white;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #e0f7fa, #fffde7);
+    }
+    #label-container {
+      font-size: 64px;
+      font-weight: bold;
+      color: #222;
+      margin-top: 20px;
+      text-align: center;
+    }
+    #webcam-container canvas {
+      border-radius: 16px;
+      box-shadow: 0 0 16px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <div>🧠 Teachable Machine Image Model</div>
+  <button onclick="init()">🚀 Start</button>
+  <button id="toggle-tts" onclick="toggleTTS()">🔊</button>
+  <div id="webcam-container"></div>
+  <div id="label-container"></div>
+
+  <!-- Thư viện -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
+  <script src="https://code.responsivevoice.org/responsivevoice.js?key=8xdGpD6j"></script>
+
+  <script type="text/javascript">
+    const tmImage = window.tmImage; // ⚠️ KHÔNG BỎ DÒNG NÀY
+    const URL = "https://teachablemachine.withgoogle.com/models/1IjH2O4IX/";
+
+    let model, webcam, labelContainer, maxPredictions;
+    let lastLabel = "";
+    let ttsEnabled = true;
+
+    function toggleTTS() {
+      ttsEnabled = !ttsEnabled;
+      document.getElementById("toggle-tts").innerText = ttsEnabled ? "🔊" : "🔇";
+      if (!ttsEnabled) responsiveVoice.cancel(); // ⛔ Tắt âm ngay lập tức
+    }
+
+    async function init() {
+      const modelURL = URL + "model.json";
+      const metadataURL = URL + "metadata.json";
+
+      model = await tmImage.load(modelURL, metadataURL);
+      maxPredictions = model.getTotalClasses();
+
+      const flip = true;
+      webcam = new tmImage.Webcam(500, 500, flip);
+      try {
+        await webcam.setup();
+        await webcam.play();
+      } catch (err) {
+        console.error("🚫 Webcam error:", err);
+        document.getElementById("label-container").innerText = "Không thể truy cập webcam – vui lòng cấp quyền.";
+        return;
+      }
+
+      document.getElementById("webcam-container").appendChild(webcam.canvas);
+      labelContainer = document.getElementById("label-container");
+      window.requestAnimationFrame(loop);
+    }
+
+    async function loop() {
+      webcam.update();
+      await predict();
+	window.requestAnimationFrame(loop);
+    }
+
+    async function predict() {
+      const predictions = await model.predictTopK(webcam.canvas, 1);
+      const label = predictions[0].className;
+      labelContainer.innerText = label;
+
+      if (label !== lastLabel) {
+        lastLabel = label;
+
+        if (ttsEnabled) {
+          responsiveVoice.cancel(); // ⛔ Hủy câu trước
+          responsiveVoice.speak(label, "Vietnamese Female");
+        }
+      }
+    }
+  </script>
+</body>
+</html>
