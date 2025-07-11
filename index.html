@@ -49,39 +49,32 @@
   <button onclick="init()">🚀 Start</button>
   <button id="toggle-tts" onclick="toggleTTS()">🔊</button>
   <div id="webcam-container"></div>
-  <div id="label-container">Chưa bắt đầu</div>
+  <div id="label-container"></div>
 
-  <!-- Thư viện Teachable Machine -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-<script
+  <!-- Thư viện -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
+  <script
 src="https://code.responsivevoice.org/responsivevoice.js?key=OJ19eCM5"></script>
-  <script>
+
+  <script type="text/javascript">
+    const tmImage = window.tmImage; // ⚠️ KHÔNG BỎ DÒNG NÀY
+    const URL = "https://teachablemachine.withgoogle.com/models/1IjH2O4IX/";
+
     let model, webcam, labelContainer, maxPredictions;
     let lastLabel = "";
     let ttsEnabled = true;
 
-    // 🗣️ Dùng speechSynthesis API (thay vì responsiveVoice)
-    function speak(text) {
-      if (!ttsEnabled) return;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "vi-VN";
-      window.speechSynthesis.cancel(); // Ngắt đoạn trước
-      window.speechSynthesis.speak(utterance);
-    }
-
     function toggleTTS() {
       ttsEnabled = !ttsEnabled;
       document.getElementById("toggle-tts").innerText = ttsEnabled ? "🔊" : "🔇";
-      if (!ttsEnabled) window.speechSynthesis.cancel();
+      if (!ttsEnabled) responsiveVoice.cancel(); // ⛔ Tắt âm ngay lập tức
     }
 
     async function init() {
-      const URL = "https://teachablemachine.withgoogle.com/models/1IjH2O4IX/";
       const modelURL = URL + "model.json";
       const metadataURL = URL + "metadata.json";
 
-      const tmImage = window.tmImage;
       model = await tmImage.load(modelURL, metadataURL);
       maxPredictions = model.getTotalClasses();
 
@@ -104,7 +97,7 @@ src="https://code.responsivevoice.org/responsivevoice.js?key=OJ19eCM5"></script>
     async function loop() {
       webcam.update();
       await predict();
-      window.requestAnimationFrame(loop);
+window.requestAnimationFrame(loop);
     }
 
     async function predict() {
@@ -114,7 +107,11 @@ src="https://code.responsivevoice.org/responsivevoice.js?key=OJ19eCM5"></script>
 
       if (label !== lastLabel) {
         lastLabel = label;
-        speak(label);
+
+        if (ttsEnabled) {
+          responsiveVoice.cancel(); // ⛔ Hủy câu trước
+          responsiveVoice.speak(label, "Vietnamese Female");
+        }
       }
     }
   </script>
