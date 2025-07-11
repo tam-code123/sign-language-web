@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -31,7 +31,7 @@
       background: linear-gradient(135deg, #e0f7fa, #fffde7);
     }
     #label-container {
-      font-size: 64px;
+      font-size: 32px;
       font-weight: bold;
       color: #222;
       margin-top: 20px;
@@ -45,38 +45,47 @@
 </head>
 <body>
 
-  <div>🧠 Teachable Machine Image Model</div>
-  <button onclick="init()">🚀 Start</button>
+  <h2>🧠 Nhận diện Ngôn ngữ Ký hiệu</h2>
+  <button onclick="init()">🚀 Bắt đầu</button>
   <button id="toggle-tts" onclick="toggleTTS()">🔊</button>
   <div id="webcam-container"></div>
-  <div id="label-container"></div>
+  <div id="label-container">Chưa bắt đầu</div>
 
-  <!-- Thư viện -->
+  <!-- Teachable Machine -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
-  <script
-src="https://code.responsivevoice.org/responsivevoice.js?key=OJ19eCM5"></script>
 
-  <script type="text/javascript">
-    const tmImage = window.tmImage; // ⚠️ KHÔNG BỎ DÒNG NÀY
-    const URL = "https://teachablemachine.withgoogle.com/models/1IjH2O4IX/";
-
+  <script>
     let model, webcam, labelContainer, maxPredictions;
     let lastLabel = "";
     let ttsEnabled = true;
 
+    function speak(text) {
+      if (!ttsEnabled) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "vi-VN";
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    }
+
     function toggleTTS() {
       ttsEnabled = !ttsEnabled;
       document.getElementById("toggle-tts").innerText = ttsEnabled ? "🔊" : "🔇";
-      if (!ttsEnabled) responsiveVoice.cancel(); // ⛔ Tắt âm ngay lập tức
+      if (!ttsEnabled) window.speechSynthesis.cancel();
     }
 
     async function init() {
+      document.getElementById("label-container").innerText = "🔄 Đang tải mô hình...";
+
+      const URL = "https://teachablemachine.withgoogle.com/models/1IjH2O4IX/";
       const modelURL = URL + "model.json";
       const metadataURL = URL + "metadata.json";
 
+      const tmImage = window.tmImage;
       model = await tmImage.load(modelURL, metadataURL);
       maxPredictions = model.getTotalClasses();
+
+      document.getElementById("label-container").innerText = "📷 Đang bật webcam...";
 
       const flip = true;
       webcam = new tmImage.Webcam(500, 500, flip);
@@ -91,13 +100,14 @@ src="https://code.responsivevoice.org/responsivevoice.js?key=OJ19eCM5"></script>
 
       document.getElementById("webcam-container").appendChild(webcam.canvas);
       labelContainer = document.getElementById("label-container");
+      labelContainer.innerText = "👀 Đang nhận diện...";
       window.requestAnimationFrame(loop);
     }
 
     async function loop() {
       webcam.update();
       await predict();
-window.requestAnimationFrame(loop);
+      window.requestAnimationFrame(loop);
     }
 
     async function predict() {
@@ -107,11 +117,7 @@ window.requestAnimationFrame(loop);
 
       if (label !== lastLabel) {
         lastLabel = label;
-
-        if (ttsEnabled) {
-          responsiveVoice.cancel(); // ⛔ Hủy câu trước
-          responsiveVoice.speak(label, "Vietnamese Female");
-        }
+        speak(label);
       }
     }
   </script>
