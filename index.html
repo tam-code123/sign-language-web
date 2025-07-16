@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -31,7 +31,7 @@
       background: linear-gradient(135deg, #e0f7fa, #fffde7);
     }
     #label-container {
-      font-size: 32px;
+      font-size: 64px;
       font-weight: bold;
       color: #222;
       margin-top: 20px;
@@ -45,13 +45,13 @@
 </head>
 <body>
 
-  <h2>🧠 Nhận diện Ngôn ngữ Ký hiệu</h2>
-  <button onclick="init()">🚀 Bắt đầu</button>
+  <div>🧠 Teachable Machine Image Model</div>
+  <button onclick="init()">🚀 Start</button>
   <button id="toggle-tts" onclick="toggleTTS()">🔊</button>
   <div id="webcam-container"></div>
   <div id="label-container">Chưa bắt đầu</div>
 
-  <!-- Teachable Machine -->
+  <!-- Thư viện Teachable Machine -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
 
@@ -60,11 +60,12 @@
     let lastLabel = "";
     let ttsEnabled = true;
 
+    // 🗣️ Dùng speechSynthesis API (thay vì responsiveVoice)
     function speak(text) {
       if (!ttsEnabled) return;
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = "vi-VN";
-      window.speechSynthesis.cancel();
+      window.speechSynthesis.cancel(); // Ngắt đoạn trước
       window.speechSynthesis.speak(utterance);
     }
 
@@ -75,8 +76,6 @@
     }
 
     async function init() {
-      document.getElementById("label-container").innerText = "🔄 Đang tải mô hình...";
-
       const URL = "https://teachablemachine.withgoogle.com/models/1IjH2O4IX/";
       const modelURL = URL + "model.json";
       const metadataURL = URL + "metadata.json";
@@ -84,8 +83,6 @@
       const tmImage = window.tmImage;
       model = await tmImage.load(modelURL, metadataURL);
       maxPredictions = model.getTotalClasses();
-
-      document.getElementById("label-container").innerText = "📷 Đang bật webcam...";
 
       const flip = true;
       webcam = new tmImage.Webcam(500, 500, flip);
@@ -100,7 +97,6 @@
 
       document.getElementById("webcam-container").appendChild(webcam.canvas);
       labelContainer = document.getElementById("label-container");
-      labelContainer.innerText = "👀 Đang nhận diện...";
       window.requestAnimationFrame(loop);
     }
 
