@@ -54,20 +54,11 @@
   <!-- Thư viện Teachable Machine -->
  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-
+<script src="https://code.responsivevoice.org/responsivevoice.js?key=ZJKqOGnz"></script>
   <script>
     let model, webcam, labelContainer, maxPredictions;
     let lastLabel = "";
     let ttsEnabled = true;
-
-    // 🗣️ Dùng speechSynthesis API (thay vì responsiveVoice)
-    function speak(text) {
-      if (!ttsEnabled) return;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "vi-VN";
-      window.speechSynthesis.cancel(); // Ngắt đoạn trước
-      window.speechSynthesis.speak(utterance);
-    }
 
     function toggleTTS() {
       ttsEnabled = !ttsEnabled;
@@ -113,7 +104,8 @@
 
       if (label !== lastLabel) {
         lastLabel = label;
-        speak(label);
+        responsiveVoice.speak(label, "Vietnamese Female");
+        labelContainer.innerText = predictions[0].className;
       }
     }
   </script>
