@@ -104,9 +104,10 @@
 
       if (label !== lastLabel) {
         lastLabel = label;
+          if (ttsEnabled) {
         responsiveVoice.speak(label, "Vietnamese Female");
-        labelContainer.innerText = predictions[0].className;
       }
+      }   
     }
   </script>
 </body>
