@@ -63,7 +63,7 @@
     function toggleTTS() {
       ttsEnabled = !ttsEnabled;
       document.getElementById("toggle-tts").innerText = ttsEnabled ? "🔊" : "🔇";
-      if (!ttsEnabled) window.speechSynthesis.cancel();
+      if (!ttsEnabled) responsiveVoice.cancel();
     }
 
     async function init() {
@@ -105,7 +105,8 @@
       if (label !== lastLabel) {
         lastLabel = label;
           if (ttsEnabled) {
-        responsiveVoice.speak(label, "Vietnamese Female");
+            responsiveVoice.cancel();// ⛔ Hủy câu trước
+            responsiveVoice.speak(label, "Vietnamese Female");
       }
       }   
     }
